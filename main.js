@@ -45,9 +45,11 @@
        2. 벽돌 줄 생성
     --------------------------------------------------------------------- */
     function generateRow(rng, round) {
-      const minHP = 1 + Math.floor(round / 4);
-      const maxHP = Math.min(4 + round, 60);
-      const density = Math.min(0.55 + round * 0.01, 0.82);
+      // 처음 3줄(round 0~2)은 무조건 체력 1 -> 공 1개로도 한 번에 깨지는 쉬운 시작
+      // 이후부터 서서히 체력/밀도가 올라가는 완만한 난이도 곡선
+      const minHP = round < 3 ? 1 : 1 + Math.floor((round - 3) / 6);
+      const maxHP = round < 3 ? 1 : Math.min(2 + Math.floor((round - 3) / 3), 30);
+      const density = Math.min(0.4 + round * 0.01, 0.8);
       const row = new Array(COLS).fill(0);
       for (let c = 0; c < COLS; c++) {
         if (rng() < density) {
@@ -58,8 +60,9 @@
       if (row.every(v => v === 0)) {
         row[Math.floor(rng() * COLS)] = minHP;
       }
-      // 가끔 픽업(+1 공) 배치
-      if (rng() < 0.12) {
+      // 가끔 픽업(+1 공) 배치 (초반에 조금 더 자주 나와서 공 개수를 빨리 늘려줌)
+      const pickupChance = round < 8 ? 0.16 : 0.11;
+      if (rng() < pickupChance) {
         const candidates = row.map((v, i) => i).filter(i => row[i] > 0);
         if (candidates.length) {
           const idx = candidates[Math.floor(rng() * candidates.length)];
@@ -175,6 +178,7 @@
           state.startAt = startAt;
           conn.send({ t: "hello", name: state.myName });
           conn.send({ t: "start", seed, startAt, hostName: state.myName });
+          beginMatchFlow();
         } else {
           conn.send({ t: "hello", name: state.myName });
         }
@@ -877,7 +881,7 @@
        실제 서비스 동작에는 영향을 주지 않음)
     --------------------------------------------------------------------- */
     if (location.search.includes("debug=1")) {
-      window.__debug = { state, beginMatchFlow, showScreen, generateRow, mulberry32 };
+      window.__debug = { state, beginMatchFlow, showScreen, generateRow, mulberry32, wireConnection };
     }
   
   })();
