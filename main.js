@@ -170,7 +170,10 @@
   
     function wireConnection(conn, isHost) {
       state.conn = conn;
-      conn.on("open", () => {
+      let openHandled = false;
+      const onOpen = () => {
+        if (openHandled) return; // 이벤트가 중복으로 들어와도 한 번만 처리
+        openHandled = true;
         if (isHost) {
           const seed = Math.floor(Math.random() * 2 ** 31);
           const startAt = Date.now() + 3200;
@@ -182,7 +185,12 @@
         } else {
           conn.send({ t: "hello", name: state.myName });
         }
-      });
+      };
+      conn.on("open", onOpen);
+      // PeerJS는 리스너를 붙이기 전에 연결이 이미 열려버리는 경우가 있어
+      // 'open' 이벤트를 놓칠 수 있음 -> 이미 열려있다면 즉시 수동으로 처리
+      if (conn.open) onOpen();
+      else setTimeout(() => { if (conn.open) onOpen(); }, 300);
       conn.on("data", handleData);
       conn.on("close", () => {
         if (state.running) {
