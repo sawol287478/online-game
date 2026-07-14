@@ -12,9 +12,9 @@
   --------------------------------------------------------------------- */
   const COLS = 7;
   const ROWS = 9;                // 보드에 보이는 줄 수 (마지막 줄 = 패배 판정 줄)
-  const MATCH_SECONDS = 90;
+  const MATCH_SECONDS = 180;
   const BALL_RADIUS_RATIO = 0.016;   // 보드 너비 대비 공 반지름 비율
-  const BALL_SPEED_RATIO = 0.62;     // 보드 너비 대비 초당 이동 비율
+  const BALL_SPEED_RATIO = 1.0;      // 보드 너비 대비 초당 이동 비율
   const LAUNCH_GAP_MS = 60;          // 공 발사 간격
   const HEARTBEAT_MS = 400;
 
